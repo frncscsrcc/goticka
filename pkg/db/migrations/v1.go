@@ -4,17 +4,6 @@ import (
 	"database/sql"
 )
 
-func migrate_v0(db *sql.DB) error {
-	err := exec_statement(db,
-		`CREATE TABLE _migrations (
-			Version int PRIMARY KEY
-		);`,
-
-		`INSERT INTO _migrations VALUES (0)`,
-	)
-	return err
-}
-
 func migrate_v1(db *sql.DB) error {
 	err := exec_statement(db,
 		`CREATE TABLE users (
@@ -81,14 +70,4 @@ func migrate_v1(db *sql.DB) error {
 		`INSERT INTO _migrations VALUES (1)`,
 	)
 	return err
-}
-
-func migrate_v2(db *sql.DB) error {
-	// err := exec_statement(db,
-	// 	"ALTER TABLE user ADD username varchar(255)",
-
-	// 	"INSERT INTO _migrations VALUES (2)",
-	// )
-	// return err
-	return nil
 }
