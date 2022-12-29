@@ -3,12 +3,12 @@ package services
 import (
 	"goticka/pkg/adapters/cache"
 	"goticka/pkg/adapters/repositories"
+	"goticka/pkg/config"
 	"goticka/pkg/dependencies"
 	"goticka/pkg/domain/queue"
 	"goticka/pkg/events"
 	"log"
 	"strconv"
-	"time"
 )
 
 type QueueService struct {
@@ -62,7 +62,7 @@ func (qs QueueService) GetByID(id int64) (queue.Queue, error) {
 		Type:  "queue",
 		Key:   strconv.FormatInt(id, 10),
 		Value: q,
-		TTL:   10 * time.Minute,
+		TTL:   config.GetConfig().Cache.QueueTTL,
 	})
 
 	return q, nil

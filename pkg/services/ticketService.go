@@ -4,12 +4,12 @@ import (
 	"errors"
 	"goticka/pkg/adapters/cache"
 	"goticka/pkg/adapters/repositories"
+	"goticka/pkg/config"
 	"goticka/pkg/dependencies"
 	"goticka/pkg/domain/ticket"
 	"goticka/pkg/events"
 	"log"
 	"strconv"
-	"time"
 )
 
 type TicketService struct {
@@ -60,7 +60,7 @@ func (ts TicketService) GetByID(id int64) (ticket.Ticket, error) {
 		Type:  "ticket",
 		Key:   strconv.FormatInt(id, 10),
 		Value: t,
-		TTL:   10 * time.Minute,
+		TTL:   config.GetConfig().Cache.TicketTTL,
 	})
 
 	return t, nil
@@ -133,7 +133,7 @@ func (ts TicketService) EnrichTicketInfo(t ticket.Ticket) (ticket.Ticket, error)
 		Type:  "ticket",
 		Key:   strconv.FormatInt(enrichedTicket.ID, 10) + "_FULL",
 		Value: t,
-		TTL:   10 * time.Minute,
+		TTL:   config.GetConfig().Cache.TicketTTL,
 	})
 
 	return enrichedTicket, nil
