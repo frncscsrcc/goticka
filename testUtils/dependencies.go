@@ -14,8 +14,8 @@ func ResetTestDependencies() {
 	attachmentRepository := repositories.NewAttachmentRepositorySQL(dbConn, binaryStorer)
 	articleRepository := repositories.NewArticleRepositorySQL(dbConn, attachmentRepository)
 	queueRepository := repositories.NewQueueRepositorySQL(dbConn)
-	ticketRepository := repositories.NewTicketRepositorySQL(dbConn, articleRepository)
 	auditRepository := repositories.NewAuditRepositorySQL(dbConn)
+	ticketRepository := repositories.NewTicketRepositorySQL(dbConn, articleRepository)
 
 	fakeDependencies := dependencies.Dependencies{
 		Testing:              true,

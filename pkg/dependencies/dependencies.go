@@ -33,8 +33,8 @@ func init() {
 	attachmentRepository := repositories.NewAttachmentRepositorySQL(dbConn, binaryStorer)
 	articleRepository := repositories.NewArticleRepositorySQL(dbConn, attachmentRepository)
 	queueRepository := repositories.NewQueueRepositorySQL(dbConn)
-	ticketRepository := repositories.NewTicketRepositorySQL(dbConn, articleRepository)
 	auditRepository := repositories.NewAuditRepositorySQL(dbConn)
+	ticketRepository := repositories.NewTicketRepositorySQL(dbConn, articleRepository)
 
 	dependencies = Dependencies{
 		Testing: false,
