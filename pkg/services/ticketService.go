@@ -5,6 +5,7 @@ import (
 	"goticka/pkg/adapters/repositories"
 	"goticka/pkg/dependencies"
 	"goticka/pkg/domain/ticket"
+	"goticka/pkg/events"
 	"log"
 )
 
@@ -25,6 +26,12 @@ func (ts TicketService) Create(t ticket.Ticket) (ticket.Ticket, error) {
 		return ticket.Ticket{}, err
 	}
 	log.Printf("created ticket %d\n", createdTicket.ID)
+
+	events.Handler().SendSyncLocalEvent(events.LocalEvent{
+		EventType: events.TICKET_CREATED,
+		TicketID:  createdTicket.ID,
+	})
+
 	return createdTicket, err
 }
 
@@ -94,5 +101,15 @@ func (ts TicketService) Delete(t ticket.Ticket) error {
 	if t.ID == 0 {
 		return errors.New("can not delete an invalid ticket")
 	}
-	return dependencies.DI().TicketRepository.Delete(t)
+
+	err := dependencies.DI().TicketRepository.Delete(t)
+
+	if err == nil {
+		events.Handler().SendSyncLocalEvent(events.LocalEvent{
+			EventType: events.TICKET_DELETED,
+			TicketID:  t.ID,
+		})
+	}
+
+	return err
 }

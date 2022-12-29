@@ -5,6 +5,7 @@ import (
 	"goticka/pkg/adapters/repositories"
 	"goticka/pkg/dependencies"
 	"goticka/pkg/domain/user"
+	"goticka/pkg/events"
 	"log"
 )
 
@@ -25,6 +26,12 @@ func (us UserService) Create(u user.User) (user.User, error) {
 		return user.User{}, err
 	}
 	log.Printf("created user %d\n", createdUser.ID)
+
+	events.Handler().SendSyncLocalEvent(events.LocalEvent{
+		EventType: events.USER_CREATED,
+		UserID:    createdUser.ID,
+	})
+
 	return createdUser, err
 }
 
@@ -61,5 +68,10 @@ func (us UserService) Delete(u user.User) error {
 	if err != nil {
 		log.Printf("[ERROR] Can not delete User UserID=%d !\n", u.ID)
 	}
+
+	events.Handler().SendSyncLocalEvent(events.LocalEvent{
+		EventType: events.USER_DELETED,
+		UserID:    u.ID,
+	})
 	return nil
 }

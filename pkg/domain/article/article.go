@@ -15,6 +15,7 @@ type Article struct {
 	Attachments []attachment.Attachment
 
 	Created time.Time
+	Changed time.Time
 	Deleted time.Time
 }
 

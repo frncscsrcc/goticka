@@ -8,5 +8,6 @@ type User struct {
 	Password string
 
 	Created time.Time
+	Changed time.Time
 	Deleted time.Time
 }

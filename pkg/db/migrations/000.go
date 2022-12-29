@@ -21,7 +21,8 @@ func migrate_v1(db *sql.DB) error {
 			id INTEGER PRIMARY KEY AUTOINCREMENT, 
 			username varchar(255) UNIQUE,
 			password varchar(255),
-			created datetime, 
+			created datetime,
+			changed datetime,
 			deleted datetime
 		);`,
 
@@ -29,7 +30,8 @@ func migrate_v1(db *sql.DB) error {
 			id INTEGER PRIMARY KEY AUTOINCREMENT, 
 			name varchar(255), 
 			description text,
-			created datetime, 
+			created datetime,
+			changed datetime,
 			deleted datetime
 		);`,
 
@@ -37,7 +39,8 @@ func migrate_v1(db *sql.DB) error {
 			id INTEGER PRIMARY KEY AUTOINCREMENT, 
 			subject text,
 			queueID INTEGER,
-			created datetime, 
+			created datetime,
+			changed datetime, 
 			deleted datetime
 		);`,
 
@@ -47,7 +50,8 @@ func migrate_v1(db *sql.DB) error {
 			fromUserID INTEGER, 
 			toUserID INTEGER, 
 			body text, 
-			created datetime, 
+			created datetime,
+			changed datetime,
 			deleted datetime 
 		);`,
 
@@ -58,7 +62,8 @@ func migrate_v1(db *sql.DB) error {
 			FileName    varchar(255),
 			ContentType varchar(50),
 			Size        integer,
-			created datetime, 
+			created datetime,
+			changed datetime,
 			deleted datetime
 		);`,
 

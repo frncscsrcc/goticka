@@ -12,6 +12,7 @@ import (
 	"goticka/pkg/domain/queue"
 	"goticka/pkg/domain/ticket"
 	"goticka/pkg/domain/user"
+	"goticka/pkg/events"
 	"goticka/pkg/services"
 	"goticka/pkg/version"
 	"log"
@@ -25,6 +26,16 @@ func main() {
 	db := db.GetDB()
 
 	migrations.Migrate(db)
+
+	handler := events.Handler()
+	handler.RegisterCallBack(events.TICKET_CREATED, func(event events.LocalEvent) error {
+		fmt.Println("NEW_TICKET1", event)
+		return nil
+	})
+	handler.RegisterCallBack(events.TICKET_CREATED, func(event events.LocalEvent) error {
+		fmt.Println("NEW_TICKET2", event)
+		return nil
+	})
 
 	us := services.NewUserService()
 	u1, u1err := us.Create(user.User{

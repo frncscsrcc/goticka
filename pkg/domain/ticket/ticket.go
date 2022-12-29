@@ -14,6 +14,7 @@ type Ticket struct {
 	Articles []article.Article
 
 	Created time.Time
+	Changed time.Time
 	Deleted time.Time
 }
 

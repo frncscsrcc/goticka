@@ -14,6 +14,7 @@ type Attachment struct {
 	Raw         []byte
 
 	Created time.Time
+	Changed time.Time
 	Deleted time.Time
 }
 

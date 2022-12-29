@@ -34,6 +34,7 @@ func (qr QueueRepositorySQL) fetchQueueRow(rows *sql.Rows) ([]queue.Queue, error
 			&q.Name,
 			&q.Description,
 			&q.Created,
+			&q.Changed,
 			&deleted,
 		)
 		if errScan != nil {
@@ -56,6 +57,7 @@ func (qr QueueRepositorySQL) GetByID(ID int64) (queue.Queue, error) {
 			q.name,
 			q.description,
 			q.created,
+			q.changed,
 			q.deleted
 		FROM queues q
 		WHERE q.id = ?
@@ -84,11 +86,12 @@ func (qr QueueRepositorySQL) GetByID(ID int64) (queue.Queue, error) {
 func (ar QueueRepositorySQL) Create(q queue.Queue) (queue.Queue, error) {
 	log.Print("Creating a queue")
 
+	now := time.Now()
 	res, err := ar.db.Exec(`
 		INSERT INTO Queues 
-			(name, description, created)
-		VALUES (?, ?, ?);`,
-		q.Name, q.Description, time.Now(),
+			(name, description, created, changed)
+		VALUES (?, ?, ?, ?);`,
+		q.Name, q.Description, now, now,
 	)
 
 	if err != nil {

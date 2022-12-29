@@ -4,6 +4,7 @@ import (
 	"goticka/pkg/adapters/repositories"
 	"goticka/pkg/dependencies"
 	"goticka/pkg/domain/queue"
+	"goticka/pkg/events"
 	"log"
 )
 
@@ -25,5 +26,11 @@ func (qs QueueService) Create(q queue.Queue) (queue.Queue, error) {
 		return queue.Queue{}, err
 	}
 	log.Printf("created queue %d\n", createdQueue.ID)
+
+	events.Handler().SendSyncLocalEvent(events.LocalEvent{
+		EventType: events.QUEUE_CREATED,
+		QueueID:   createdQueue.ID,
+	})
+
 	return createdQueue, err
 }

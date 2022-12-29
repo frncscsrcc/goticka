@@ -59,6 +59,7 @@ func (ar AttachmentRepositorySQL) fetchAttachmentRow(rows *sql.Rows) ([]attachme
 			&a.ContentType,
 			&a.Size,
 			&a.Created,
+			&a.Changed,
 			&deleted,
 		)
 		if errScan != nil {
@@ -83,6 +84,7 @@ func (ar AttachmentRepositorySQL) GetByID(ID int64) (attachment.Attachment, erro
 			a.ContentType,
 			a.Size,
 			a.created,
+			a.changed,
 			a.deleted
 		FROM attachments a
 		WHERE a.id = ?
@@ -117,6 +119,7 @@ func (ar AttachmentRepositorySQL) GetByArticleID(articleId int64) ([]attachment.
 			a.ContentType,
 			a.Size,
 			a.created,
+			a.changed,
 			a.deleted
 		FROM attachments a
 		WHERE a.articleId = ?`,
@@ -146,6 +149,7 @@ func (ar AttachmentRepositorySQL) StoreAttachment(a attachment.Attachment, artic
 		return attachment.Attachment{}, storedBinaryError
 	}
 
+	now := time.Now()
 	res, err := ar.db.Exec(`
 		INSERT INTO Attachments (
 			articleID,
@@ -153,10 +157,11 @@ func (ar AttachmentRepositorySQL) StoreAttachment(a attachment.Attachment, artic
 			filename,
 			contentType,
 			size,
-			created
+			created,
+			changed
 		)
-		VALUES (?, ?, ?, ?, ?, ?);`,
-		articleID, a.URI, a.FileName, a.ContentType, a.Size, time.Now())
+		VALUES (?, ?, ?, ?, ?, ?, ?);`,
+		articleID, a.URI, a.FileName, a.ContentType, a.Size, now, now)
 
 	if err != nil {
 		return attachment.Attachment{}, err

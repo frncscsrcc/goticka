@@ -11,6 +11,7 @@ type Queue struct {
 	Description string
 
 	Created time.Time
+	Changed time.Time
 	Deleted time.Time
 }
 

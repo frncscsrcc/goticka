@@ -50,10 +50,22 @@ func (ur UserRepositorySQL) CreateUser(u user.User) (user.User, error) {
 
 	hashedPassword := ur.hasher.Hash(u.Password)
 
+	now := time.Now()
 	res, err := ur.db.Exec(`
 		INSERT INTO Users
-			(username, password, created)
-		VALUES (?, ?, ?);`, u.UserName, hashedPassword, time.Now())
+			(
+				username, 
+				password, 
+				created, 
+				changed
+			)
+		VALUES (?, ?, ?, ?);`,
+
+		u.UserName,
+		hashedPassword,
+		now,
+		now,
+	)
 
 	if err != nil {
 		return user.User{}, err
@@ -77,6 +89,7 @@ func (ur UserRepositorySQL) fetchUserRow(rows *sql.Rows) ([]user.User, error) {
 			&u.ID,
 			&u.UserName,
 			&u.Created,
+			&u.Changed,
 			&deleted,
 		)
 		if deleted.Valid {
@@ -96,6 +109,7 @@ func (ur UserRepositorySQL) GetByID(ID int64) (user.User, error) {
 			ID,
 			username,
 			created,
+			changed,
 			deleted
 		FROM users 
 		WHERE users.id = ?
@@ -127,6 +141,7 @@ func (ur UserRepositorySQL) GetByUserName(userName string) (user.User, error) {
 			ID,
 			username,
 			created,
+			changed,
 			deleted
 		FROM users 
 		WHERE users.username = ?
@@ -159,6 +174,7 @@ func (ur UserRepositorySQL) GetByUserNameAndPassword(userName string, password s
 			ID,
 			username,
 			created,
+			changed,
 			deleted
 		FROM users
 		WHERE users.username = ? AND users.password = ? AND deleted IS NULL
