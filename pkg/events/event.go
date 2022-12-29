@@ -32,14 +32,16 @@ type LocalEvent struct {
 }
 
 type LocalEventHandler struct {
-	eventMap map[EventType][]func(LocalEvent) error
+	syncEventMap  map[EventType][]func(LocalEvent) error
+	asyncEventMap map[EventType][]func(LocalEvent)
 }
 
 var localEventHandler *LocalEventHandler
 
 func init() {
 	localEventHandler = &LocalEventHandler{
-		eventMap: make(map[EventType][]func(LocalEvent) error),
+		syncEventMap:  make(map[EventType][]func(LocalEvent) error),
+		asyncEventMap: make(map[EventType][]func(LocalEvent)),
 	}
 }
 
@@ -47,24 +49,42 @@ func Handler() *LocalEventHandler {
 	return localEventHandler
 }
 
-func (handler *LocalEventHandler) RegisterCallBack(
+func (handler *LocalEventHandler) RegisterSyncCallBack(
 	eventType EventType,
 	cb func(LocalEvent) error,
 ) {
-	_, exists := handler.eventMap[eventType]
+	_, exists := handler.syncEventMap[eventType]
 	if !exists {
-		handler.eventMap[eventType] = make([]func(LocalEvent) error, 0)
+		handler.syncEventMap[eventType] = make([]func(LocalEvent) error, 0)
 	}
-	handler.eventMap[eventType] = append(handler.eventMap[eventType], cb)
+	handler.syncEventMap[eventType] = append(handler.syncEventMap[eventType], cb)
 }
 
-func (handler *LocalEventHandler) SendSyncLocalEvent(e LocalEvent) error {
+func (handler *LocalEventHandler) RegisterAsyncCallBack(
+	eventType EventType,
+	cb func(LocalEvent),
+) {
+	_, exists := handler.asyncEventMap[eventType]
+	if !exists {
+		handler.asyncEventMap[eventType] = make([]func(LocalEvent), 0)
+	}
+	handler.asyncEventMap[eventType] = append(handler.asyncEventMap[eventType], cb)
+}
+
+func (handler *LocalEventHandler) SendLocalEvent(e LocalEvent) error {
 	if e.EventType == UNDEFINED {
 		return errors.New("missing EventType, skipping")
 	}
 
-	callbacks, _ := handler.eventMap[e.EventType]
-	for _, callback := range callbacks {
+	// Trigger async callbacks and forget
+	asyncCallbacks, _ := handler.asyncEventMap[e.EventType]
+	for _, callback := range asyncCallbacks {
+		go callback(e)
+	}
+
+	// Trigger sync
+	syncCallbacks, _ := handler.syncEventMap[e.EventType]
+	for _, callback := range syncCallbacks {
 		err := callback(e)
 		if err != nil {
 			return err

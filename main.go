@@ -28,11 +28,11 @@ func main() {
 	migrations.Migrate(db)
 
 	handler := events.Handler()
-	handler.RegisterCallBack(events.TICKET_CREATED, func(event events.LocalEvent) error {
+	handler.RegisterSyncCallBack(events.TICKET_CREATED, func(event events.LocalEvent) error {
 		fmt.Println("NEW_TICKET1", event)
 		return nil
 	})
-	handler.RegisterCallBack(events.TICKET_CREATED, func(event events.LocalEvent) error {
+	handler.RegisterSyncCallBack(events.TICKET_CREATED, func(event events.LocalEvent) error {
 		fmt.Println("NEW_TICKET2", event)
 		return nil
 	})

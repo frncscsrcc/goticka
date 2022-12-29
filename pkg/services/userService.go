@@ -27,7 +27,7 @@ func (us UserService) Create(u user.User) (user.User, error) {
 	}
 	log.Printf("created user %d\n", createdUser.ID)
 
-	events.Handler().SendSyncLocalEvent(events.LocalEvent{
+	events.Handler().SendLocalEvent(events.LocalEvent{
 		EventType: events.USER_CREATED,
 		UserID:    createdUser.ID,
 	})
@@ -69,7 +69,7 @@ func (us UserService) Delete(u user.User) error {
 		log.Printf("[ERROR] Can not delete User UserID=%d !\n", u.ID)
 	}
 
-	events.Handler().SendSyncLocalEvent(events.LocalEvent{
+	events.Handler().SendLocalEvent(events.LocalEvent{
 		EventType: events.USER_DELETED,
 		UserID:    u.ID,
 	})

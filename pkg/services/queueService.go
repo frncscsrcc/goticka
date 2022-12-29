@@ -27,7 +27,7 @@ func (qs QueueService) Create(q queue.Queue) (queue.Queue, error) {
 	}
 	log.Printf("created queue %d\n", createdQueue.ID)
 
-	events.Handler().SendSyncLocalEvent(events.LocalEvent{
+	events.Handler().SendLocalEvent(events.LocalEvent{
 		EventType: events.QUEUE_CREATED,
 		QueueID:   createdQueue.ID,
 	})

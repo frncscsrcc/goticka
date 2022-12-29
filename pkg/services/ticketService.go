@@ -27,7 +27,7 @@ func (ts TicketService) Create(t ticket.Ticket) (ticket.Ticket, error) {
 	}
 	log.Printf("created ticket %d\n", createdTicket.ID)
 
-	events.Handler().SendSyncLocalEvent(events.LocalEvent{
+	events.Handler().SendLocalEvent(events.LocalEvent{
 		EventType: events.TICKET_CREATED,
 		TicketID:  createdTicket.ID,
 	})
@@ -105,7 +105,7 @@ func (ts TicketService) Delete(t ticket.Ticket) error {
 	err := dependencies.DI().TicketRepository.Delete(t)
 
 	if err == nil {
-		events.Handler().SendSyncLocalEvent(events.LocalEvent{
+		events.Handler().SendLocalEvent(events.LocalEvent{
 			EventType: events.TICKET_DELETED,
 			TicketID:  t.ID,
 		})
