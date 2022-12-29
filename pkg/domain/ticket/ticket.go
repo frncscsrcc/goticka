@@ -4,6 +4,7 @@ import (
 	"errors"
 	"goticka/pkg/domain/article"
 	"goticka/pkg/domain/queue"
+	"time"
 )
 
 type Ticket struct {
@@ -11,6 +12,9 @@ type Ticket struct {
 	Queue    queue.Queue
 	Subject  string
 	Articles []article.Article
+
+	Created time.Time
+	Deleted time.Time
 }
 
 func (t Ticket) Validate() error {

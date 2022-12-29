@@ -30,6 +30,7 @@ type UserRepositoryInterface interface {
 	GetByID(ID int64) (user.User, error)
 	GetByUserName(userName string) (user.User, error)
 	GetByUserNameAndPassword(userName string, password string) (user.User, error)
+	Delete(u user.User) error
 }
 
 type UserRepositorySQL struct {
@@ -71,10 +72,16 @@ func (ur UserRepositorySQL) fetchUserRow(rows *sql.Rows) ([]user.User, error) {
 	users := make([]user.User, 0)
 	for rows.Next() {
 		var u user.User
+		var deleted sql.NullTime
 		errScan := rows.Scan(
 			&u.ID,
 			&u.UserName,
+			&u.Created,
+			&deleted,
 		)
+		if deleted.Valid {
+			u.Deleted = deleted.Time
+		}
 		if errScan != nil {
 			return []user.User{}, errScan
 		}
@@ -87,7 +94,9 @@ func (ur UserRepositorySQL) GetByID(ID int64) (user.User, error) {
 	rows, err := ur.db.Query(`
 		SELECT
 			ID,
-			username
+			username,
+			created,
+			deleted
 		FROM users 
 		WHERE users.id = ?
 		LIMIT 1`,
@@ -116,7 +125,9 @@ func (ur UserRepositorySQL) GetByUserName(userName string) (user.User, error) {
 	rows, err := ur.db.Query(`
 		SELECT
 			ID,
-			username
+			username,
+			created,
+			deleted
 		FROM users 
 		WHERE users.username = ?
 		LIMIT 1`,
@@ -146,9 +157,11 @@ func (ur UserRepositorySQL) GetByUserNameAndPassword(userName string, password s
 	rows, err := ur.db.Query(`
 		SELECT
 			ID,
-			username
+			username,
+			created,
+			deleted
 		FROM users
-		WHERE users.username = ? AND users.password = ?
+		WHERE users.username = ? AND users.password = ? AND deleted IS NULL
 		LIMIT 1`,
 
 		userName, hashedPassword,
@@ -171,4 +184,17 @@ func (ur UserRepositorySQL) GetByUserNameAndPassword(userName string, password s
 	fmt.Print(users)
 
 	return users[0], nil
+}
+
+func (ur UserRepositorySQL) Delete(u user.User) error {
+	log.Print("Deleting an user")
+
+	_, err := ur.db.Exec(`
+		UPDATE users
+		SET deleted = ?
+		WHERE users.id = ?`,
+
+		time.Now(), u.ID)
+
+	return err
 }

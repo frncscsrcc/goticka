@@ -115,9 +115,58 @@ func TestGetUserByUserNameAndPassword(t *testing.T) {
 		"WRONG_PASSWORD",
 	)
 	if wrongPswUserError == nil {
-		t.Errorf("expected error, but not fot any error")
+		t.Errorf("expected error, but dod not get any error")
 	}
 	if wrongPswUser.ID != 0 {
 		t.Errorf("wrong user id, expected %d, got %d", 0, wrongPswUser.ID)
 	}
+
+	// Marking the user as deleted
+	deleteError := us.Delete(createdUser)
+	if deleteError != nil {
+		t.Errorf("unexpected error deleting an user, got %s", deleteError)
+	}
+
+	// Check deleted users are not found
+	deletedUser, deletedUserError := us.GetByUserNameAndPassword(
+		createdUser.UserName,
+		createdUser.Password,
+	)
+	if deletedUserError == nil {
+		t.Errorf("expected error, but dod not get any error")
+	}
+	if deletedUser.ID != 0 {
+		t.Errorf("wrong user id, expected %d, got %d", 0, deletedUser.ID)
+	}
+}
+
+func TestDeleteUser(t *testing.T) {
+	testUtils.ResetTestDependencies()
+	us := NewUserService()
+
+	createdUser, _ := us.Create(
+		user.User{
+			UserName: "TestUserGetByUserNameAndPassword",
+			Password: "TestPassword",
+		},
+	)
+
+	retrivedUser, _ := us.GetByUserName(createdUser.UserName)
+
+	if !retrivedUser.Deleted.IsZero() {
+		t.Errorf("deleted field should be empty, but got %s", retrivedUser.Deleted)
+	}
+
+	// Marking the user as deleted
+	deleteError := us.Delete(createdUser)
+	if deleteError != nil {
+		t.Errorf("unexpected error deleting an user, got %s", deleteError)
+	}
+
+	retrivedUser, _ = us.GetByUserName(createdUser.UserName)
+
+	if retrivedUser.Deleted.IsZero() {
+		t.Error("deleted field should now not be empty")
+	}
+
 }

@@ -1,6 +1,9 @@
 package attachment
 
-import "errors"
+import (
+	"errors"
+	"time"
+)
 
 type Attachment struct {
 	ID          int64
@@ -9,6 +12,9 @@ type Attachment struct {
 	ContentType string
 	Size        int
 	Raw         []byte
+
+	Created time.Time
+	Deleted time.Time
 }
 
 func (a Attachment) Validate() error {

@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"goticka/pkg/adapters/repositories"
 	"goticka/pkg/dependencies"
 	"goticka/pkg/domain/user"
@@ -49,4 +50,16 @@ func (us UserService) GetByUserNameAndPassword(userName string, password string)
 		log.Printf("[ERROR] User UserName=%s Password=.... not found!\n", userName)
 	}
 	return user, err
+}
+
+func (us UserService) Delete(u user.User) error {
+	if u.ID == 0 {
+		return errors.New("can not delete an invalid user")
+	}
+
+	err := dependencies.DI().UserRepository.Delete(u)
+	if err != nil {
+		log.Printf("[ERROR] Can not delete User UserID=%d !\n", u.ID)
+	}
+	return nil
 }

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"goticka/pkg/domain/attachment"
 	"goticka/pkg/domain/user"
+	"time"
 )
 
 type Article struct {
@@ -12,6 +13,9 @@ type Article struct {
 	To          user.User
 	Body        string
 	Attachments []attachment.Attachment
+
+	Created time.Time
+	Deleted time.Time
 }
 
 func (a Article) Validate() error {

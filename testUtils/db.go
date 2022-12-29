@@ -8,7 +8,7 @@ import (
 )
 
 func NewTestDB() *sql.DB {
-	inMemoryConnection, err := sql.Open("sqlite3", ":memory:")
+	inMemoryConnection, err := sql.Open("sqlite3", ":memory:?parseTime=true")
 	if err != nil {
 		panic(err)
 	}

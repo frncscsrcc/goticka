@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"database/sql"
+	"errors"
 	"goticka/pkg/domain/article"
 	"goticka/pkg/domain/ticket"
 	"log"
@@ -9,7 +10,9 @@ import (
 )
 
 type TicketRepositoryInterface interface {
+	GetByID(ID int64) (ticket.Ticket, error)
 	StoreTicket(t ticket.Ticket) (ticket.Ticket, error)
+	Delete(t ticket.Ticket) error
 }
 
 type TicketRepositorySQL struct {
@@ -24,13 +27,80 @@ func NewTicketRepositorySQL(db *sql.DB, articleRepository ArticleRepositoryInter
 	}
 }
 
+func (tr TicketRepositorySQL) fetchTicketRow(rows *sql.Rows) ([]ticket.Ticket, error) {
+	tickets := make([]ticket.Ticket, 0)
+	for rows.Next() {
+		var t ticket.Ticket
+		var deleted sql.NullTime
+
+		errScan := rows.Scan(
+			&t.ID,
+			&t.Queue.ID,
+			&t.Subject,
+			&t.Created,
+			&deleted,
+		)
+		if errScan != nil {
+			return []ticket.Ticket{}, errScan
+		}
+
+		if deleted.Valid {
+			t.Deleted = deleted.Time
+		}
+
+		tickets = append(tickets, t)
+	}
+	return tickets, nil
+}
+
+func (tr TicketRepositorySQL) GetByID(ID int64) (ticket.Ticket, error) {
+	rows, err := tr.db.Query(`
+		SELECT
+			t.ID,
+			t.queueID,
+			t.subject,
+			t.created,
+			t.deleted
+		FROM tickets t
+		WHERE t.id = ?
+		LIMIT 1`,
+
+		ID,
+	)
+
+	if err != nil {
+		return ticket.Ticket{}, err
+	}
+
+	defer rows.Close()
+
+	tickets, err := tr.fetchTicketRow(rows)
+	if err != nil {
+		return ticket.Ticket{}, err
+	}
+	if len(tickets) == 0 {
+		return ticket.Ticket{}, errors.New("ticket not found")
+	}
+
+	return tickets[0], nil
+}
+
 func (tr TicketRepositorySQL) StoreTicket(t ticket.Ticket) (ticket.Ticket, error) {
 	log.Print("Storing a ticket")
 
+	now := time.Now()
 	res, err := tr.db.Exec(`
-		INSERT INTO Tickets
-			(subject, created)
-		VALUES (?, ?);`, t.Subject, time.Now())
+		INSERT INTO Tickets (
+			subject,
+			queueId,
+			created
+		)
+		VALUES (?, ?, ?);`,
+
+		t.Subject,
+		t.Queue.ID,
+		now,
+	)
 
 	if err != nil {
 		return ticket.Ticket{}, err
@@ -43,13 +113,33 @@ func (tr TicketRepositorySQL) StoreTicket(t ticket.Ticket) (ticket.Ticket, error
 
 	createdTicket := t
 	createdTicket.ID = id
+	createdTicket.Created = now
 
-	var a article.Article
-	if a, err = tr.articleRepository.StoreArticle(t.Articles[0], id); err != nil {
-		return ticket.Ticket{}, err
+	articles := make([]article.Article, 0)
+	for _, article := range t.Articles {
+		if storedArticle, err := tr.articleRepository.StoreArticle(article, id); err != nil {
+			return ticket.Ticket{}, err
+		} else {
+			articles = append(articles, storedArticle)
+		}
 	}
-
-	createdTicket.Articles = []article.Article{a}
+	createdTicket.Articles = articles
 
 	return createdTicket, nil
+}
+
+func (tr TicketRepositorySQL) Delete(t ticket.Ticket) error {
+	log.Print("Deleting a ticket")
+
+	now := time.Now()
+	_, err := tr.db.Exec(`
+		UPDATE Tickets
+		SET deleted = ?
+		WHERE tickets.id = ?`,
+
+		now,
+		t.ID,
+	)
+
+	return err
 }

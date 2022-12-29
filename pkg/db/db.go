@@ -17,7 +17,7 @@ func init() {
 }
 
 func ConnectSQLite3() (*sql.DB, error) {
-	return sql.Open("sqlite3", "./test.db")
+	return sql.Open("sqlite3", "./test.db?parseTime=true")
 }
 
 func GetDB() *sql.DB {
