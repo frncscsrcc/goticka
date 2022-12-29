@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"goticka/pkg/db"
 	"goticka/pkg/db/migrations"
+	"goticka/pkg/dependencies"
 	"goticka/pkg/domain/article"
 	"goticka/pkg/domain/attachment"
+	"goticka/pkg/domain/audit"
 	"goticka/pkg/domain/queue"
 	"goticka/pkg/domain/ticket"
 	"goticka/pkg/domain/user"
@@ -93,4 +95,9 @@ func main() {
 
 	retrivedUser, retrivedUserError := us.GetByID(1)
 	log.Printf("%+v, %s", retrivedUser, retrivedUserError)
+
+	dependencies.DI().AuditRepository.Save(audit.Audit{
+		Message:  "Message",
+		TicketID: 1,
+	})
 }

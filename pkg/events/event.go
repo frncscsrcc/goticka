@@ -76,6 +76,11 @@ func (handler *LocalEventHandler) SendLocalEvent(e LocalEvent) error {
 		return errors.New("missing EventType, skipping")
 	}
 
+	// If time is not passed, use the current time
+	if e.Time.IsZero() {
+		e.Time = time.Now()
+	}
+
 	// Trigger async callbacks and forget
 	asyncCallbacks, _ := handler.asyncEventMap[e.EventType]
 	for _, callback := range asyncCallbacks {

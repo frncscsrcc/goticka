@@ -67,6 +67,17 @@ func migrate_v1(db *sql.DB) error {
 			deleted datetime
 		);`,
 
+		`CREATE TABLE audits (
+			id INTEGER PRIMARY KEY AUTOINCREMENT, 
+			ticketID INTEGER, 
+			articleID INTEGER, 
+			attachmentID INTEGER,
+			userID INTEGER, 
+			message TEXT,
+			extra TEXT,
+			created datetime
+		);`,
+
 		`INSERT INTO _migrations VALUES (1)`,
 	)
 	return err

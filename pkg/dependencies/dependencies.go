@@ -19,6 +19,7 @@ type Dependencies struct {
 	ArticleRepository    repositories.ArticleRepositoryInterface
 	AttachmentRepository repositories.AttachmentRepositoryInterface
 	BinaryStorer         repositories.AttachmentBinaryStorerFS
+	AuditRepository      repositories.AuditRepositoryInterface
 }
 
 var dependencies Dependencies
@@ -33,6 +34,7 @@ func init() {
 	articleRepository := repositories.NewArticleRepositorySQL(dbConn, attachmentRepository)
 	queueRepository := repositories.NewQueueRepositorySQL(dbConn)
 	ticketRepository := repositories.NewTicketRepositorySQL(dbConn, articleRepository)
+	auditRepository := repositories.NewAuditRepositorySQL(dbConn)
 
 	dependencies = Dependencies{
 		Testing: false,
@@ -44,6 +46,7 @@ func init() {
 		ArticleRepository:    articleRepository,
 		AttachmentRepository: attachmentRepository,
 		BinaryStorer:         binaryStorer,
+		AuditRepository:      auditRepository,
 	}
 }
 
