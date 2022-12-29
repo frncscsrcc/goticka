@@ -1,11 +1,14 @@
 package services
 
 import (
+	"goticka/pkg/adapters/cache"
 	"goticka/pkg/adapters/repositories"
 	"goticka/pkg/dependencies"
 	"goticka/pkg/domain/queue"
 	"goticka/pkg/events"
 	"log"
+	"strconv"
+	"time"
 )
 
 type QueueService struct {
@@ -13,7 +16,9 @@ type QueueService struct {
 }
 
 func NewQueueService() QueueService {
-	return QueueService{}
+	return QueueService{
+		queueRepository: dependencies.DI().QueueRepository,
+	}
 }
 
 func (qs QueueService) Create(q queue.Queue) (queue.Queue, error) {
@@ -21,7 +26,7 @@ func (qs QueueService) Create(q queue.Queue) (queue.Queue, error) {
 		return queue.Queue{}, validationError
 	}
 
-	createdQueue, err := dependencies.DI().QueueRepository.Create(q)
+	createdQueue, err := qs.queueRepository.Create(q)
 	if err != nil {
 		return queue.Queue{}, err
 	}
@@ -33,4 +38,32 @@ func (qs QueueService) Create(q queue.Queue) (queue.Queue, error) {
 	})
 
 	return createdQueue, err
+}
+
+func (qs QueueService) GetByID(id int64) (queue.Queue, error) {
+	// Check in the cache
+	cached := dependencies.DI().Cache.Get(cache.Item{
+		Type: "queue",
+		Key:  strconv.FormatInt(id, 10),
+	})
+	if cached.IsValid() {
+		if value, ok := cached.Value.(queue.Queue); ok {
+			return value, nil
+		}
+	}
+
+	q, err := qs.queueRepository.GetByID(id)
+	if err != nil {
+		return queue.Queue{}, err
+	}
+
+	// Save in cache
+	dependencies.DI().Cache.Set(cache.Item{
+		Type:  "queue",
+		Key:   strconv.FormatInt(id, 10),
+		Value: q,
+		TTL:   10 * time.Minute,
+	})
+
+	return q, nil
 }

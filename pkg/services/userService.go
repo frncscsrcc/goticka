@@ -14,14 +14,16 @@ type UserService struct {
 }
 
 func NewUserService() UserService {
-	return UserService{}
+	return UserService{
+		userRepository: dependencies.DI().UserRepository,
+	}
 }
 
 func (us UserService) Create(u user.User) (user.User, error) {
 	// if validationError := u.Validate(); validationError != nil {
 	// 	return ticket.Ticket{}, validationError
 	// }
-	createdUser, err := dependencies.DI().UserRepository.CreateUser(u)
+	createdUser, err := us.userRepository.CreateUser(u)
 	if err != nil {
 		return user.User{}, err
 	}
@@ -36,7 +38,7 @@ func (us UserService) Create(u user.User) (user.User, error) {
 }
 
 func (us UserService) GetByID(ID int64) (user.User, error) {
-	user, err := dependencies.DI().UserRepository.GetByID(ID)
+	user, err := us.userRepository.GetByID(ID)
 	if err != nil {
 		log.Printf("[ERROR] User ID=%d not found!\n", ID)
 	}
@@ -44,7 +46,7 @@ func (us UserService) GetByID(ID int64) (user.User, error) {
 }
 
 func (us UserService) GetByUserName(userName string) (user.User, error) {
-	user, err := dependencies.DI().UserRepository.GetByUserName(userName)
+	user, err := us.userRepository.GetByUserName(userName)
 	if err != nil {
 		log.Printf("[ERROR] User UserName=%s not found!\n", userName)
 	}

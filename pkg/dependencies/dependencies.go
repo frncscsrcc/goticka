@@ -1,6 +1,7 @@
 package dependencies
 
 import (
+	"goticka/pkg/adapters/cache"
 	"goticka/pkg/adapters/repositories"
 	"goticka/pkg/config"
 	"goticka/pkg/db"
@@ -12,6 +13,7 @@ func GetConfig() config.Config {
 
 type Dependencies struct {
 	Testing              bool
+	Cache                cache.CacheInterface
 	PasswordHasher       repositories.PasswordHasherInterface
 	UserRepository       repositories.UserRepositoryInterface
 	QueueRepository      repositories.QueueRepositoryInterface
@@ -27,6 +29,7 @@ var dependencies Dependencies
 func init() {
 	dbConn := db.GetDB()
 
+	cache := cache.GetInMemoryCache()
 	passwordHasher := repositories.NewPlainTextPasswordHasher()
 	userRepository := repositories.NewUserRepositorySQL(dbConn, passwordHasher)
 	binaryStorer := repositories.NewAttachmentBinaryStorerFS("./")
@@ -39,6 +42,7 @@ func init() {
 	dependencies = Dependencies{
 		Testing: false,
 
+		Cache:                cache,
 		PasswordHasher:       passwordHasher,
 		UserRepository:       userRepository,
 		QueueRepository:      queueRepository,

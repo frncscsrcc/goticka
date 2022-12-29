@@ -1,6 +1,7 @@
 package testUtils
 
 import (
+	"goticka/pkg/adapters/cache"
 	"goticka/pkg/adapters/repositories"
 	"goticka/pkg/dependencies"
 )
@@ -8,6 +9,7 @@ import (
 func ResetTestDependencies() {
 	dbConn := NewTestDB()
 
+	cache := cache.GetInMemoryCache()
 	passwordHasher := repositories.NewPlainTextPasswordHasher()
 	userRepository := repositories.NewUserRepositorySQL(dbConn, passwordHasher)
 	binaryStorer := repositories.NewAttachmentBinaryStorerFS("./")
@@ -19,6 +21,7 @@ func ResetTestDependencies() {
 
 	fakeDependencies := dependencies.Dependencies{
 		Testing:              true,
+		Cache:                cache,
 		PasswordHasher:       passwordHasher,
 		UserRepository:       userRepository,
 		QueueRepository:      queueRepository,

@@ -90,11 +90,15 @@ func main() {
 	}
 
 	ticket_service := services.NewTicketService()
-	_, err1 := ticket_service.Create(t)
+	createdTicket, err1 := ticket_service.Create(t)
 	log.Print(err1)
 
 	retrivedUser, retrivedUserError := us.GetByID(1)
 	log.Printf("%+v, %s", retrivedUser, retrivedUserError)
+
+	ticket_service.GetByID(createdTicket.ID)
+	ticket_service.GetByID(createdTicket.ID)
+	ticket_service.GetByID(createdTicket.ID)
 
 	dependencies.DI().AuditRepository.Save(audit.Audit{
 		Message:  "Message",

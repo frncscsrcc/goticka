@@ -2,11 +2,14 @@ package services
 
 import (
 	"errors"
+	"goticka/pkg/adapters/cache"
 	"goticka/pkg/adapters/repositories"
 	"goticka/pkg/dependencies"
 	"goticka/pkg/domain/ticket"
 	"goticka/pkg/events"
 	"log"
+	"strconv"
+	"time"
 )
 
 type TicketService struct {
@@ -36,19 +39,55 @@ func (ts TicketService) Create(t ticket.Ticket) (ticket.Ticket, error) {
 }
 
 func (ts TicketService) GetByID(id int64) (ticket.Ticket, error) {
-	return dependencies.DI().TicketRepository.GetByID(id)
+	// Check in the cache
+	cached := dependencies.DI().Cache.Get(cache.Item{
+		Type: "ticket",
+		Key:  strconv.FormatInt(id, 10),
+	})
+	if cached.IsValid() {
+		if value, ok := cached.Value.(ticket.Ticket); ok {
+			return value, nil
+		}
+	}
+
+	t, err := dependencies.DI().TicketRepository.GetByID(id)
+	if err != nil {
+		return ticket.Ticket{}, err
+	}
+
+	// Save in cache
+	dependencies.DI().Cache.Set(cache.Item{
+		Type:  "ticket",
+		Key:   strconv.FormatInt(id, 10),
+		Value: t,
+		TTL:   10 * time.Minute,
+	})
+
+	return t, nil
 }
 
 func (ts TicketService) EnrichTicketInfo(t ticket.Ticket) (ticket.Ticket, error) {
+	// Check in the cache
+	cached := dependencies.DI().Cache.Get(cache.Item{
+		Type: "ticket",
+		Key:  strconv.FormatInt(t.ID, 10) + "_FULL",
+	})
+	if cached.IsValid() {
+		if value, ok := cached.Value.(ticket.Ticket); ok {
+			return value, nil
+		}
+	}
+
 	enrichedTicket := t
 
-	queueRepo := dependencies.DI().QueueRepository
+	queueService := NewQueueService()
+	userService := NewUserService()
+
 	articleRepo := dependencies.DI().ArticleRepository
 	attachmentRepo := dependencies.DI().AttachmentRepository
-	userRepo := dependencies.DI().UserRepository
 
 	// Add the queue
-	queue, queueError := queueRepo.GetByID(enrichedTicket.Queue.ID)
+	queue, queueError := queueService.GetByID(enrichedTicket.Queue.ID)
 	if queueError != nil {
 		return ticket.Ticket{}, queueError
 	}
@@ -62,13 +101,13 @@ func (ts TicketService) EnrichTicketInfo(t ticket.Ticket) (ticket.Ticket, error)
 
 	for i, article := range t.Articles {
 		// Add the users
-		from, errorFrom := userRepo.GetByID(article.From.ID)
+		from, errorFrom := userService.GetByID(article.From.ID)
 		if errorFrom != nil {
 			return ticket.Ticket{}, errorFrom
 		}
 		articles[i].From = from
 
-		to, errorTo := userRepo.GetByID(article.To.ID)
+		to, errorTo := userService.GetByID(article.To.ID)
 		if errorFrom != nil {
 			return ticket.Ticket{}, errorTo
 		}
@@ -89,7 +128,14 @@ func (ts TicketService) EnrichTicketInfo(t ticket.Ticket) (ticket.Ticket, error)
 		Skip(article)
 	}
 
-	Skip(queueRepo, attachmentRepo)
+	// Save in cache
+	dependencies.DI().Cache.Set(cache.Item{
+		Type:  "ticket",
+		Key:   strconv.FormatInt(enrichedTicket.ID, 10) + "_FULL",
+		Value: t,
+		TTL:   10 * time.Minute,
+	})
+
 	return enrichedTicket, nil
 }
 
@@ -101,6 +147,16 @@ func (ts TicketService) Delete(t ticket.Ticket) error {
 	if t.ID == 0 {
 		return errors.New("can not delete an invalid ticket")
 	}
+
+	// Check in the cache
+	dependencies.DI().Cache.Delete(cache.Item{
+		Type: "ticket",
+		Key:  strconv.FormatInt(t.ID, 10),
+	})
+	dependencies.DI().Cache.Delete(cache.Item{
+		Type: "ticket",
+		Key:  strconv.FormatInt(t.ID, 10) + "_FULL",
+	})
 
 	err := dependencies.DI().TicketRepository.Delete(t)
 

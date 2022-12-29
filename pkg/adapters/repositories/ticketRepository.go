@@ -38,7 +38,7 @@ func (tr TicketRepositorySQL) fetchTicketRow(rows *sql.Rows) ([]ticket.Ticket, e
 			&t.Queue.ID,
 			&t.Subject,
 			&t.Created,
-			t.Changed,
+			&t.Changed,
 			&deleted,
 		)
 		if errScan != nil {
