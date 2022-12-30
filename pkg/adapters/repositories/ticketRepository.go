@@ -35,6 +35,7 @@ func (tr TicketRepositorySQL) fetchTicketRow(rows *sql.Rows) ([]ticket.Ticket, e
 
 		errScan := rows.Scan(
 			&t.ID,
+			&t.Status,
 			&t.Queue.ID,
 			&t.Subject,
 			&t.Created,
@@ -58,6 +59,7 @@ func (tr TicketRepositorySQL) GetByID(ID int64) (ticket.Ticket, error) {
 	rows, err := tr.db.Query(`
 		SELECT
 			t.ID,
+			t.status,
 			t.queueID,
 			t.subject,
 			t.created,
@@ -95,13 +97,15 @@ func (tr TicketRepositorySQL) StoreTicket(t ticket.Ticket) (ticket.Ticket, error
 		INSERT INTO Tickets (
 			subject,
 			queueId,
+			status,
 			created,
 			changed
 		)
-		VALUES (?, ?, ?, ?);`,
+		VALUES (?, ?, ?, ?, ?);`,
 
 		t.Subject,
 		t.Queue.ID,
+		ticket.NEW,
 		now,
 		now,
 	)

@@ -7,8 +7,18 @@ import (
 	"time"
 )
 
+type TicketStatus int64
+
+const NEW TicketStatus = 1
+const OPEN TicketStatus = 2
+const PENDING_INTERNAL TicketStatus = 4
+const PENDING_EXTERNAL TicketStatus = 5
+const WAITING_APPROVAL TicketStatus = 6
+const CLOSED TicketStatus = 7
+
 type Ticket struct {
 	ID       int64
+	Status   TicketStatus
 	Queue    queue.Queue
 	Subject  string
 	Articles []article.Article

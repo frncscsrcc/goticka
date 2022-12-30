@@ -7,8 +7,10 @@ import (
 func migrate_v1(db *sql.DB) error {
 	err := exec_statement(db,
 		`CREATE TABLE users (
-			id INTEGER PRIMARY KEY AUTOINCREMENT, 
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			external BOOL,
 			username varchar(255) UNIQUE,
+			email varchar(255) UNIQUE,
 			password varchar(255),
 			created datetime,
 			changed datetime,
@@ -25,7 +27,8 @@ func migrate_v1(db *sql.DB) error {
 		);`,
 
 		`CREATE TABLE tickets (
-			id INTEGER PRIMARY KEY AUTOINCREMENT, 
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			status INTEGER,
 			subject text,
 			queueID INTEGER,
 			created datetime,
@@ -34,8 +37,9 @@ func migrate_v1(db *sql.DB) error {
 		);`,
 
 		`CREATE TABLE articles (
-			id INTEGER PRIMARY KEY AUTOINCREMENT, 
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			ticketID INTEGER, 
+			external BOOL,
 			fromUserID INTEGER, 
 			toUserID INTEGER, 
 			body text, 

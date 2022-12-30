@@ -9,6 +9,7 @@ import (
 
 type Article struct {
 	ID          int64
+	External    bool
 	From        user.User
 	To          user.User
 	Body        string

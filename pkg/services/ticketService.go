@@ -24,6 +24,12 @@ func (ts TicketService) Create(t ticket.Ticket) (ticket.Ticket, error) {
 	if validationError := t.Validate(); validationError != nil {
 		return ticket.Ticket{}, validationError
 	}
+
+	// If ticket status is not passed, assume it is NEW
+	if t.Status == 0 {
+		t.Status = ticket.NEW
+	}
+
 	createdTicket, err := dependencies.DI().TicketRepository.StoreTicket(t)
 	if err != nil {
 		return ticket.Ticket{}, err

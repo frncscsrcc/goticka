@@ -23,12 +23,14 @@ func TestCreateAndRetrieveTicket(t *testing.T) {
 	u1, _ := us.Create(
 		user.User{
 			UserName: "u1",
+			Email:    "email1",
 			Password: "p1",
 		},
 	)
 	u2, _ := us.Create(
 		user.User{
 			UserName: "u2",
+			Email:    "email2",
 			Password: "p2",
 		},
 	)
@@ -74,6 +76,9 @@ func TestCreateAndRetrieveTicket(t *testing.T) {
 	if retrivedTicket.ID != createdTicket.ID {
 		t.Errorf("wrong ticket ID, expected %d but got %d", createdTicket.ID, retrivedTicket.ID)
 	}
+	if retrivedTicket.Status != ticket.NEW {
+		t.Errorf("wrong status, expected %v but got %v", ticket.NEW, retrivedTicket.Status)
+	}
 	if retrivedTicket.Created.IsZero() {
 		t.Error("creation date should not be empty")
 	}
@@ -116,12 +121,14 @@ func TestEnrichedTicket(t *testing.T) {
 	from, _ := us.Create(
 		user.User{
 			UserName: "FROM_USER",
+			Email:    "email1",
 			Password: "p1",
 		},
 	)
 	to, _ := us.Create(
 		user.User{
 			UserName: "TO_USER",
+			Email:    "email2",
 			Password: "p2",
 		},
 	)
@@ -254,5 +261,4 @@ func TestEnrichedTicket(t *testing.T) {
 			len(attachments2),
 		)
 	}
-
 }

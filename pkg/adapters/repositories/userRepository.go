@@ -54,13 +54,17 @@ func (ur UserRepositorySQL) CreateUser(u user.User) (user.User, error) {
 	res, err := ur.db.Exec(`
 		INSERT INTO Users
 			(
-				username, 
+				external,
+				email,
+				username,
 				password, 
 				created, 
 				changed
 			)
-		VALUES (?, ?, ?, ?);`,
+		VALUES (?,?, ?, ?, ?, ?);`,
 
+		u.External,
+		u.Email,
 		u.UserName,
 		hashedPassword,
 		now,
@@ -87,6 +91,8 @@ func (ur UserRepositorySQL) fetchUserRow(rows *sql.Rows) ([]user.User, error) {
 		var deleted sql.NullTime
 		errScan := rows.Scan(
 			&u.ID,
+			&u.External,
+			&u.Email,
 			&u.UserName,
 			&u.Created,
 			&u.Changed,
@@ -107,6 +113,8 @@ func (ur UserRepositorySQL) GetByID(ID int64) (user.User, error) {
 	rows, err := ur.db.Query(`
 		SELECT
 			ID,
+			external,
+			email,
 			username,
 			created,
 			changed,
@@ -139,6 +147,8 @@ func (ur UserRepositorySQL) GetByUserName(userName string) (user.User, error) {
 	rows, err := ur.db.Query(`
 		SELECT
 			ID,
+			external,
+			email,
 			username,
 			created,
 			changed,
@@ -172,6 +182,8 @@ func (ur UserRepositorySQL) GetByUserNameAndPassword(userName string, password s
 	rows, err := ur.db.Query(`
 		SELECT
 			ID,
+			external,
+			email,
 			username,
 			created,
 			changed,

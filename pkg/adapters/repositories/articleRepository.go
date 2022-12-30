@@ -34,6 +34,7 @@ func (ar ArticleRepositorySQL) fetchArticleRow(rows *sql.Rows) ([]article.Articl
 
 		errScan := rows.Scan(
 			&a.ID,
+			&a.External,
 			&a.Body,
 			&a.From.ID,
 			&a.To.ID,
@@ -58,6 +59,7 @@ func (ar ArticleRepositorySQL) GetByID(ID int64) (article.Article, error) {
 	rows, err := ar.db.Query(`
 		SELECT
 			a.ID,
+			a.External,
 			a.Body,
 			a.FromUserID,
 			a.ToUserID,
@@ -92,6 +94,7 @@ func (ar ArticleRepositorySQL) GetByTicketID(ticketID int64) ([]article.Article,
 	rows, err := ar.db.Query(`
 		SELECT
 			a.ID,
+			a.External,
 			a.Body,
 			a.FromUserID,
 			a.ToUserID,
@@ -127,9 +130,9 @@ func (ar ArticleRepositorySQL) StoreArticle(a article.Article, ticketID int64) (
 	now := time.Now()
 	res, err := ar.db.Exec(`
 		INSERT INTO Articles 
-			(ticketID, body, fromUserID, toUserID, created, changed)
-		VALUES (?, ?, ?, ?, ?, ?);`,
-		ticketID, a.Body, a.From.ID, a.To.ID, now, now,
+			(ticketID, external, body, fromUserID, toUserID, created, changed)
+		VALUES (?, ?, ?, ?, ?, ?, ?);`,
+		ticketID, a.External, a.Body, a.From.ID, a.To.ID, now, now,
 	)
 
 	if err != nil {
