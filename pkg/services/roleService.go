@@ -69,6 +69,35 @@ func (rs RoleService) GetByID(id int64) (role.Role, error) {
 	return r, nil
 }
 
+func (rs RoleService) GetByName(roleName string) (role.Role, error) {
+	// Check in the cache
+	cacheKey := "role_name_" + roleName
+	cached := dependencies.DI().Cache.Get(cache.Item{
+		Type: "role",
+		Key:  cacheKey,
+	})
+	if cached.IsValid() {
+		if value, ok := cached.Value.(role.Role); ok {
+			return value, nil
+		}
+	}
+
+	r, err := rs.roleRepository.GetByName(roleName)
+	if err != nil {
+		return role.Role{}, err
+	}
+
+	// Save in cache
+	dependencies.DI().Cache.Set(cache.Item{
+		Type:  "role",
+		Key:   cacheKey,
+		Value: r,
+		TTL:   config.GetConfig().Cache.RoleTTL,
+	})
+
+	return r, nil
+}
+
 func (rs RoleService) GetByUserID(userID int64) ([]role.Role, error) {
 	// Check in the cache
 	cacheKey := fmt.Sprintf("role_for_user_%s", strconv.FormatInt(userID, 10))

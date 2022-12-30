@@ -40,20 +40,22 @@ func main() {
 	})
 
 	us := services.NewUserService()
-	u1, u1err := us.Create(user.User{
+	agent, agentErr := us.CreateAgent(user.User{
 		UserName: "USERNAME1",
 		Password: "PASSWORD1",
+		Email:    "Email1",
 	})
-	if u1err != nil {
-		panic(u1err)
+	if agentErr != nil {
+		panic(agentErr)
 	}
 
-	u2, u2err := us.Create(user.User{
+	customer, customerErr := us.CreateCustomer(user.User{
 		UserName: "USERNAME2",
 		Password: "PASSWORD2",
+		Email:    "Email2",
 	})
-	if u2err != nil {
-		panic(u2err)
+	if customerErr != nil {
+		panic(customerErr)
 	}
 
 	q1, newQueueError := services.NewQueueService().Create(queue.Queue{Name: "Queue1"})
@@ -66,9 +68,10 @@ func main() {
 		Queue:   q1,
 		Articles: []article.Article{
 			{
-				Body: "BODY",
-				From: u1,
-				To:   u2,
+				Body:     "BODY",
+				External: true,
+				From:     customer,
+				To:       agent,
 				Attachments: []attachment.Attachment{
 					{
 						FileName:    "file1.txt",

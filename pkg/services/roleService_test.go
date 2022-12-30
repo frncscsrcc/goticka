@@ -31,6 +31,10 @@ func TestCreateAndRetriveRole(t *testing.T) {
 	if retrivedRoleError != nil {
 		t.Errorf("unexpected error %s", retrivedRoleError)
 	}
+	if retrivedRole.ID != createdRole.ID {
+		t.Errorf("wrong id, expected %d but got %d", createdRole.ID, retrivedRole.ID)
+	}
+
 	if retrivedRole.Name != roleName {
 		t.Errorf("wrong role name, expected %s but got %s", roleName, retrivedRole.Name)
 	}
@@ -47,5 +51,11 @@ func TestCreateAndRetriveRole(t *testing.T) {
 		t.Error("deleted should be empty")
 	}
 
-	// TODO Call UserGet to check if the returned value is correct
+	retrivedByName, retrivedByNameError := rs.GetByName(roleName)
+	if retrivedByNameError != nil {
+		t.Errorf("unexpected error %s", retrivedByNameError)
+	}
+	if retrivedByName.ID != createdRole.ID {
+		t.Errorf("wrong id, expected %d but got %d", createdRole.ID, retrivedByName.ID)
+	}
 }

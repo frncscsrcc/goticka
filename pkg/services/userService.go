@@ -38,6 +38,50 @@ func (us UserService) Create(u user.User) (user.User, error) {
 	return createdUser, err
 }
 
+func (us UserService) CreateAgent(u user.User) (user.User, error) {
+	// if validationError := u.Validate(); validationError != nil {
+	// 	return ticket.Ticket{}, validationError
+	// }
+	createdUser, err := us.Create(u)
+	if err != nil {
+		return user.User{}, err
+	}
+
+	agentRole, err := NewRoleService().GetByName("agent")
+	if err != nil {
+		return createdUser, err
+	}
+
+	err = us.AddRole(createdUser, agentRole)
+	if err != nil {
+		return createdUser, err
+	}
+
+	return createdUser, err
+}
+
+func (us UserService) CreateCustomer(u user.User) (user.User, error) {
+	// if validationError := u.Validate(); validationError != nil {
+	// 	return ticket.Ticket{}, validationError
+	// }
+	createdUser, err := us.Create(u)
+	if err != nil {
+		return user.User{}, err
+	}
+
+	customerRole, err := NewRoleService().GetByName("customer")
+	if err != nil {
+		return createdUser, err
+	}
+
+	err = us.AddRole(createdUser, customerRole)
+	if err != nil {
+		return createdUser, err
+	}
+
+	return createdUser, err
+}
+
 func (us UserService) GetByID(ID int64) (user.User, error) {
 	user, err := us.userRepository.GetByID(ID)
 	if err != nil {

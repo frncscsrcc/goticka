@@ -2,9 +2,12 @@ package migrations
 
 import (
 	"database/sql"
+	"time"
 )
 
 func migrate_v1(db *sql.DB) error {
+	now := time.Now().UTC().Format("2006-01-02 15:04:05")
+
 	err := exec_statement(db,
 		`CREATE TABLE users (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -25,6 +28,10 @@ func migrate_v1(db *sql.DB) error {
 			changed datetime,
 			deleted datetime
 		);`,
+
+		`INSERT INTO roles (name, description, created, changed) VALUES ('admin', 'standard admin role', '`+now+`', '`+now+`');`,
+		`INSERT INTO roles (name, description, created, changed) VALUES ('agent', 'standard agent role', '`+now+`', '`+now+`');`,
+		`INSERT INTO roles (name, description, created, changed) VALUES ('customer', 'standard customer role', '`+now+`', '`+now+`');`,
 
 		`CREATE TABLE users_roles (
 			userID INTEGER NOT NULL, 

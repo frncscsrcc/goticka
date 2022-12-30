@@ -11,6 +11,7 @@ import (
 
 type RoleRepositoryInterface interface {
 	GetByID(ID int64) (role.Role, error)
+	GetByName(roleName string) (role.Role, error)
 	GetByUserID(userID int64) ([]role.Role, error)
 	Create(r role.Role) (role.Role, error)
 
@@ -69,6 +70,39 @@ func (rr RoleRepositorySQL) GetByID(ID int64) (role.Role, error) {
 		LIMIT 1`,
 
 		ID,
+	)
+
+	if err != nil {
+		return role.Role{}, err
+	}
+
+	defer rows.Close()
+
+	roles, err := rr.fetchQueueRow(rows)
+	if err != nil {
+		return role.Role{}, err
+	}
+	if len(roles) == 0 {
+		return role.Role{}, errors.New("role not found")
+	}
+
+	return roles[0], nil
+}
+
+func (rr RoleRepositorySQL) GetByName(roleName string) (role.Role, error) {
+	rows, err := rr.db.Query(`
+		SELECT
+			r.ID,
+			r.name,
+			r.description,
+			r.created,
+			r.changed,
+			r.deleted
+		FROM roles r
+		WHERE r.name = ?
+		LIMIT 1`,
+
+		roleName,
 	)
 
 	if err != nil {
