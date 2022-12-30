@@ -1,6 +1,7 @@
 package services
 
 import (
+	"goticka/pkg/domain/role"
 	"goticka/pkg/domain/user"
 	"goticka/testUtils"
 	"testing"
@@ -167,6 +168,80 @@ func TestDeleteUser(t *testing.T) {
 
 	if retrivedUser.Deleted.IsZero() {
 		t.Error("deleted field should now not be empty")
+	}
+
+}
+
+func TestUserRoles(t *testing.T) {
+	testUtils.ResetTestDependencies()
+	us := NewUserService()
+	rs := NewRoleService()
+
+	createdUser, _ := us.Create(
+		user.User{
+			UserName: "TestUserGetByUserNameAndPassword",
+			Password: "TestPassword",
+		},
+	)
+
+	role1 := role.Role{
+		Name: "ROLE1",
+	}
+	role2 := role.Role{
+		Name: "ROLE2",
+	}
+	role1, _ = rs.Create(role1)
+	role2, _ = rs.Create(role2)
+
+	var retrivedUser user.User
+	var err error
+
+	retrivedUser, err = us.GetByID(createdUser.ID)
+	if err != nil {
+		t.Errorf("unexpected error %s", err)
+	}
+	if len(retrivedUser.Roles) != 0 {
+		t.Errorf("wrong number of roles, expected %d but got %d", 0, len(retrivedUser.Roles))
+	}
+
+	err = us.AddRole(createdUser, role1)
+	if err != nil {
+		t.Errorf("unexpected error %s", err)
+	}
+	retrivedUser, err = us.GetByID(createdUser.ID)
+	if err != nil {
+		t.Errorf("unexpected error %s", err)
+	}
+	if len(retrivedUser.Roles) != 1 {
+		t.Errorf("wrong number of roles, expected %d but got %d", 1, len(retrivedUser.Roles))
+	} else if retrivedUser.Roles[0].Name != role1.Name {
+		t.Errorf("wrong role, expected %s but got %s", role1.Name, retrivedUser.Roles[0].Name)
+	}
+
+	err = us.AddRole(createdUser, role2)
+	if err != nil {
+		t.Errorf("unexpected error %s", err)
+	}
+	retrivedUser, err = us.GetByID(createdUser.ID)
+	if err != nil {
+		t.Errorf("unexpected error %s", err)
+	}
+	if len(retrivedUser.Roles) != 2 {
+		t.Errorf("wrong number of roles, expected %d but got %d", 2, len(retrivedUser.Roles))
+	}
+
+	err = us.RemoveRole(createdUser, role1)
+	if err != nil {
+		t.Errorf("unexpected error %s", err)
+	}
+	retrivedUser, err = us.GetByID(createdUser.ID)
+	if err != nil {
+		t.Errorf("unexpected error %s", err)
+	}
+	if len(retrivedUser.Roles) != 1 {
+		t.Errorf("wrong number of roles, expected %d but got %d", 1, len(retrivedUser.Roles))
+	} else if retrivedUser.Roles[0].Name != role2.Name {
+		t.Errorf("wrong role, expected %s but got %s", role2.Name, retrivedUser.Roles[0].Name)
 	}
 
 }

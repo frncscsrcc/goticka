@@ -15,6 +15,7 @@ type Dependencies struct {
 	Testing              bool
 	Cache                cache.CacheInterface
 	PasswordHasher       repositories.PasswordHasherInterface
+	RoleRepository       repositories.RoleRepositoryInterface
 	UserRepository       repositories.UserRepositoryInterface
 	QueueRepository      repositories.QueueRepositoryInterface
 	TicketRepository     repositories.TicketRepositoryInterface
@@ -30,8 +31,9 @@ func init() {
 	dbConn := db.GetDB()
 
 	cache := cache.GetInMemoryCache()
+	roleRepository := repositories.NewRoleRepositorySQL(dbConn)
 	passwordHasher := repositories.NewPlainTextPasswordHasher()
-	userRepository := repositories.NewUserRepositorySQL(dbConn, passwordHasher)
+	userRepository := repositories.NewUserRepositorySQL(dbConn, passwordHasher, roleRepository)
 	binaryStorer := repositories.NewAttachmentBinaryStorerFS("./")
 	attachmentRepository := repositories.NewAttachmentRepositorySQL(dbConn, binaryStorer)
 	articleRepository := repositories.NewArticleRepositorySQL(dbConn, attachmentRepository)
@@ -44,6 +46,7 @@ func init() {
 
 		Cache:                cache,
 		PasswordHasher:       passwordHasher,
+		RoleRepository:       roleRepository,
 		UserRepository:       userRepository,
 		QueueRepository:      queueRepository,
 		TicketRepository:     ticketRepository,

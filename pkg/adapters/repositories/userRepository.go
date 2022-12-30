@@ -3,7 +3,7 @@ package repositories
 import (
 	"database/sql"
 	"errors"
-	"fmt"
+	"goticka/pkg/domain/role"
 	"goticka/pkg/domain/user"
 	"log"
 	"time"
@@ -31,17 +31,26 @@ type UserRepositoryInterface interface {
 	GetByUserName(userName string) (user.User, error)
 	GetByUserNameAndPassword(userName string, password string) (user.User, error)
 	Delete(u user.User) error
+
+	AddRole(user user.User, role role.Role) error
+	RemoveRole(user user.User, role role.Role) error
 }
 
 type UserRepositorySQL struct {
-	db     *sql.DB
-	hasher PasswordHasherInterface
+	db             *sql.DB
+	hasher         PasswordHasherInterface
+	roleRepository RoleRepositoryInterface
 }
 
-func NewUserRepositorySQL(db *sql.DB, hasher PasswordHasherInterface) *UserRepositorySQL {
+func NewUserRepositorySQL(
+	db *sql.DB,
+	hasher PasswordHasherInterface,
+	roleRepository RoleRepositoryInterface,
+) *UserRepositorySQL {
 	return &UserRepositorySQL{
-		db:     db,
-		hasher: hasher,
+		db:             db,
+		hasher:         hasher,
+		roleRepository: roleRepository,
 	}
 }
 
@@ -140,6 +149,13 @@ func (ur UserRepositorySQL) GetByID(ID int64) (user.User, error) {
 		return user.User{}, errors.New("user not found")
 	}
 
+	// Add the roles
+	roles, rolesError := ur.roleRepository.GetByUserID(ID)
+	if rolesError != nil {
+		return user.User{}, rolesError
+	}
+	users[0].Roles = roles
+
 	return users[0], nil
 }
 
@@ -173,6 +189,13 @@ func (ur UserRepositorySQL) GetByUserName(userName string) (user.User, error) {
 	if len(users) == 0 {
 		return user.User{}, errors.New("user not found")
 	}
+
+	// Add the roles
+	roles, rolesError := ur.roleRepository.GetByUserID(users[0].ID)
+	if rolesError != nil {
+		return user.User{}, rolesError
+	}
+	users[0].Roles = roles
 
 	return users[0], nil
 }
@@ -209,8 +232,6 @@ func (ur UserRepositorySQL) GetByUserNameAndPassword(userName string, password s
 		return user.User{}, errors.New("user not found")
 	}
 
-	fmt.Print(users)
-
 	return users[0], nil
 }
 
@@ -225,4 +246,12 @@ func (ur UserRepositorySQL) Delete(u user.User) error {
 		time.Now(), u.ID)
 
 	return err
+}
+
+func (ur UserRepositorySQL) AddRole(user user.User, role role.Role) error {
+	return ur.roleRepository.AddRoleToUser(user, role)
+}
+
+func (ur UserRepositorySQL) RemoveRole(user user.User, role role.Role) error {
+	return ur.roleRepository.RemoveRoleFromUser(user, role)
 }

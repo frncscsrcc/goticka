@@ -17,6 +17,21 @@ func migrate_v1(db *sql.DB) error {
 			deleted datetime
 		);`,
 
+		`CREATE TABLE roles (
+			id INTEGER PRIMARY KEY AUTOINCREMENT, 
+			name varchar(255), 
+			description text,
+			created datetime,
+			changed datetime,
+			deleted datetime
+		);`,
+
+		`CREATE TABLE users_roles (
+			userID INTEGER NOT NULL, 
+			roleID INTEGER NOT NULL, 
+			created datetime
+		);`,
+
 		`CREATE TABLE queues (
 			id INTEGER PRIMARY KEY AUTOINCREMENT, 
 			name varchar(255), 

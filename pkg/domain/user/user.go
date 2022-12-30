@@ -1,6 +1,9 @@
 package user
 
-import "time"
+import (
+	"goticka/pkg/domain/role"
+	"time"
+)
 
 type User struct {
 	ID       int64
@@ -11,4 +14,6 @@ type User struct {
 	Created  time.Time
 	Changed  time.Time
 	Deleted  time.Time
+
+	Roles []role.Role
 }

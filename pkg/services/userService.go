@@ -4,6 +4,7 @@ import (
 	"errors"
 	"goticka/pkg/adapters/repositories"
 	"goticka/pkg/dependencies"
+	"goticka/pkg/domain/role"
 	"goticka/pkg/domain/user"
 	"goticka/pkg/events"
 	"log"
@@ -76,4 +77,26 @@ func (us UserService) Delete(u user.User) error {
 		UserID:    u.ID,
 	})
 	return nil
+}
+
+func (us UserService) AddRole(u user.User, r role.Role) error {
+	if u.ID == 0 {
+		return errors.New("invalid user")
+	}
+	if r.ID == 0 {
+		return errors.New("invalid role")
+	}
+
+	return us.userRepository.AddRole(u, r)
+}
+
+func (us UserService) RemoveRole(u user.User, r role.Role) error {
+	if u.ID == 0 {
+		return errors.New("invalid user")
+	}
+	if r.ID == 0 {
+		return errors.New("invalid role")
+	}
+
+	return us.userRepository.RemoveRole(u, r)
 }

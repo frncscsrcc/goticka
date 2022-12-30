@@ -20,6 +20,7 @@ type CacheConfig struct {
 	TicketTTL time.Duration
 	QueueTTL  time.Duration
 	UserTTL   time.Duration
+	RoleTTL   time.Duration
 }
 
 var config Config
@@ -36,6 +37,7 @@ func init() {
 			TicketTTL: 10 * time.Minute,
 			QueueTTL:  60 * time.Minute,
 			UserTTL:   10 * time.Minute,
+			RoleTTL:   60 * time.Minute,
 		},
 	}
 }
