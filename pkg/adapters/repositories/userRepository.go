@@ -232,6 +232,13 @@ func (ur UserRepositorySQL) GetByUserNameAndPassword(userName string, password s
 		return user.User{}, errors.New("user not found")
 	}
 
+	// Add the roles
+	roles, rolesError := ur.roleRepository.GetByUserID(users[0].ID)
+	if rolesError != nil {
+		return user.User{}, rolesError
+	}
+	users[0].Roles = roles
+
 	return users[0], nil
 }
 

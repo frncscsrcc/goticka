@@ -107,4 +107,14 @@ func main() {
 		Message:  "Message",
 		TicketID: 1,
 	})
+
+	JWT, authError := services.NewAuthService().PasswordAuthentication(
+		agent.UserName,
+		agent.Password,
+	)
+	if authError != nil {
+		panic(authError)
+	}
+	fmt.Println(JWT)
+	fmt.Println(services.NewAuthService().VerifyJWT(JWT))
 }

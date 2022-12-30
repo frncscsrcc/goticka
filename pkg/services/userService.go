@@ -99,7 +99,7 @@ func (us UserService) GetByUserName(userName string) (user.User, error) {
 }
 
 func (us UserService) GetByUserNameAndPassword(userName string, password string) (user.User, error) {
-	user, err := dependencies.DI().UserRepository.GetByUserNameAndPassword(userName, password)
+	user, err := us.userRepository.GetByUserNameAndPassword(userName, password)
 	if err != nil {
 		log.Printf("[ERROR] User UserName=%s Password=.... not found!\n", userName)
 	}

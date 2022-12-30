@@ -6,6 +6,7 @@ type Config struct {
 	DB      DBConfig
 	Storage StorageConfig
 	Cache   CacheConfig
+	Secrets Secrets
 }
 
 type DBConfig struct {
@@ -21,6 +22,11 @@ type CacheConfig struct {
 	QueueTTL  time.Duration
 	UserTTL   time.Duration
 	RoleTTL   time.Duration
+}
+
+type Secrets struct {
+	JWTSecret string
+	JWTTTL    time.Duration
 }
 
 var config Config
@@ -39,9 +45,18 @@ func init() {
 			UserTTL:   10 * time.Minute,
 			RoleTTL:   60 * time.Minute,
 		},
+		Secrets: Secrets{
+			JWTSecret: "___SECRET___",
+			JWTTTL:    1 * time.Hour,
+		},
 	}
 }
 
 func GetConfig() Config {
 	return config
+}
+
+func OverwriteConfig(newConfig Config) Config {
+	config = newConfig
+	return newConfig
 }
