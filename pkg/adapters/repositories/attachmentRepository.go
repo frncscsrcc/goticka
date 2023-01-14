@@ -15,14 +15,14 @@ type AttachmentRepositoryInterface interface {
 }
 
 type AttachmentRepositorySQL struct {
-	db           *sql.DB
-	binaryStorer AttachmentBinaryStorerInterface
+	db               *sql.DB
+	binaryRepository BinaryRepositoryInterface
 }
 
-func NewAttachmentRepositorySQL(db *sql.DB, binaryStorer AttachmentBinaryStorerInterface) *AttachmentRepositorySQL {
+func NewAttachmentRepositorySQL(db *sql.DB, binaryRepository BinaryRepositoryInterface) *AttachmentRepositorySQL {
 	return &AttachmentRepositorySQL{
-		db:           db,
-		binaryStorer: binaryStorer,
+		db:               db,
+		binaryRepository: binaryRepository,
 	}
 }
 
@@ -124,7 +124,7 @@ func (ar AttachmentRepositorySQL) GetByArticleID(articleId int64) ([]attachment.
 func (ar AttachmentRepositorySQL) StoreAttachment(a attachment.Attachment, articleID int64) (attachment.Attachment, error) {
 	log.Print("Storing an attachment")
 
-	a, storedBinaryError := ar.binaryStorer.StoreBinary(a)
+	a, storedBinaryError := ar.binaryRepository.StoreBinary(a)
 	if storedBinaryError != nil {
 		return attachment.Attachment{}, storedBinaryError
 	}

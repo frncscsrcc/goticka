@@ -13,8 +13,8 @@ func ResetTestDependencies() {
 	roleRepository := repositories.NewRoleRepositorySQL(dbConn)
 	passwordHasher := repositories.NewPlainTextPasswordHasher()
 	userRepository := repositories.NewUserRepositorySQL(dbConn, passwordHasher, roleRepository)
-	binaryStorer := repositories.NewAttachmentBinaryStorerFS("./")
-	attachmentRepository := repositories.NewAttachmentRepositorySQL(dbConn, binaryStorer)
+	binaryRepository := repositories.NewBinaryRepositoryMemory("./")
+	attachmentRepository := repositories.NewAttachmentRepositorySQL(dbConn, binaryRepository)
 	articleRepository := repositories.NewArticleRepositorySQL(dbConn, attachmentRepository)
 	queueRepository := repositories.NewQueueRepositorySQL(dbConn)
 	auditRepository := repositories.NewAuditRepositorySQL(dbConn)
@@ -30,7 +30,7 @@ func ResetTestDependencies() {
 		TicketRepository:     ticketRepository,
 		ArticleRepository:    articleRepository,
 		AttachmentRepository: attachmentRepository,
-		BinaryStorer:         binaryStorer,
+		BinaryRepository:     binaryRepository,
 		AuditRepository:      auditRepository,
 	}
 
