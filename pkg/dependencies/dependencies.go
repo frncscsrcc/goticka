@@ -21,7 +21,7 @@ type Dependencies struct {
 	TicketRepository     repositories.TicketRepositoryInterface
 	ArticleRepository    repositories.ArticleRepositoryInterface
 	AttachmentRepository repositories.AttachmentRepositoryInterface
-	BinaryStorer         repositories.AttachmentBinaryStorerFS
+	BinaryStorer         repositories.AttachmentBinaryStorerInterface
 	AuditRepository      repositories.AuditRepositoryInterface
 }
 
@@ -34,7 +34,7 @@ func init() {
 	roleRepository := repositories.NewRoleRepositorySQL(dbConn)
 	passwordHasher := repositories.NewPlainTextPasswordHasher()
 	userRepository := repositories.NewUserRepositorySQL(dbConn, passwordHasher, roleRepository)
-	binaryStorer := repositories.NewAttachmentBinaryStorerFS("./")
+	binaryStorer := repositories.NewAttachmentBinaryStorerFS(GetConfig().Storage.BasePath)
 	attachmentRepository := repositories.NewAttachmentRepositorySQL(dbConn, binaryStorer)
 	articleRepository := repositories.NewArticleRepositorySQL(dbConn, attachmentRepository)
 	queueRepository := repositories.NewQueueRepositorySQL(dbConn)

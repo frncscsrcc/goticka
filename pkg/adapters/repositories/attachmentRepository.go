@@ -8,26 +8,6 @@ import (
 	"time"
 )
 
-type AttachmentBinaryStorerInterface interface {
-	StoreBinary(attachment.Attachment) (attachment.Attachment, error)
-}
-
-type AttachmentBinaryStorerFS struct {
-	basePath string
-}
-
-func NewAttachmentBinaryStorerFS(basePath string) AttachmentBinaryStorerFS {
-	return AttachmentBinaryStorerFS{
-		basePath: basePath,
-	}
-}
-
-func (bs AttachmentBinaryStorerFS) StoreBinary(a attachment.Attachment) (attachment.Attachment, error) {
-	return a, nil
-}
-
-// -----
-
 type AttachmentRepositoryInterface interface {
 	GetByID(ID int64) (attachment.Attachment, error)
 	GetByArticleID(articleId int64) ([]attachment.Attachment, error)

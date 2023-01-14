@@ -15,6 +15,7 @@ type DBConfig struct {
 
 type StorageConfig struct {
 	Implementation string
+	BasePath       string
 }
 
 type CacheConfig struct {
@@ -38,6 +39,7 @@ func init() {
 		},
 		Storage: StorageConfig{
 			Implementation: "FS",
+			BasePath:       "./shared/attachments/",
 		},
 		Cache: CacheConfig{
 			TicketTTL: 10 * time.Minute,
