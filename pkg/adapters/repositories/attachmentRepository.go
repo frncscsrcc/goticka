@@ -87,6 +87,13 @@ func (ar AttachmentRepositorySQL) GetByID(ID int64) (attachment.Attachment, erro
 		return attachment.Attachment{}, errors.New("queue not found")
 	}
 
+	raw, errGetBinary := ar.binaryRepository.GetBinary(attachments[0].URI)
+	if errGetBinary != nil {
+		return attachment.Attachment{}, errors.New("can not fetch attachment binary")
+	}
+
+	attachments[0].Raw = raw
+
 	return attachments[0], nil
 }
 
@@ -116,6 +123,14 @@ func (ar AttachmentRepositorySQL) GetByArticleID(articleId int64) ([]attachment.
 	attachments, err := ar.fetchAttachmentRow(rows)
 	if err != nil {
 		return []attachment.Attachment{}, err
+	}
+
+	for i := 0; i < len(attachments); i++ {
+		raw, errGetBinary := ar.binaryRepository.GetBinary(attachments[i].URI)
+		if errGetBinary != nil {
+			return []attachment.Attachment{}, errors.New("can not fetch attachment binary")
+		}
+		attachments[i].Raw = raw
 	}
 
 	return attachments, nil
